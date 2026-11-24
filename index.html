@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central de Vídeos Virais PRO — Dark Neon 70%</title>
+  <script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.min.js"></script>
+  <style>
+    :root {
+      --bg: #060913;
+      --card: #0f172a;
+      --card-inner: #080d1a;
+      --border: #1e293b;
+      --cyan: #06b6d4;
+      --cyan-light: #38bdf8;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --text: #ffffff;
+      --muted: #cbd5e1;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; min-height: 100vh; }
+    .container { max-width: 920px; margin: 0 auto; }
+
+    /* TELA DE LICENÇA */
+    #lockOverlay { max-width: 440px; margin: 60px auto; background: var(--card); border: 2px solid #334155; border-radius: 18px; padding: 32px; text-align: center; box-shadow: 0 0 35px rgba(6,182,212,0.18); }
+    .logo { font-size: 42px; margin-bottom: 10px; }
+    h1 { font-size: 26px; font-weight: 900; background: linear-gradient(90deg, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sub { font-size: 14px; color: var(--muted); margin: 8px 0 20px; }
+    input[type="text"], select { width: 100%; background: var(--card-inner); border: 2px solid #334155; color: #fff; padding: 14px; border-radius: 10px; font-size: 15px; margin-bottom: 14px; outline: none; transition: 0.2s; }
+    input[type="text"]:focus, select:focus { border-color: var(--cyan); box-shadow: 0 0 12px rgba(6,182,212,0.25); }
+
+    /* BOTÃO PRINCIPAL */
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      border: none;
+      color: #ffffff;
+      font-weight: 900;
+      padding: 16px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 20px rgba(6, 182, 212, 0.35);
+      transition: 0.2s;
+    }
+    .btn-primary:hover { filter: brightness(1.12); transform: translateY(-1px); box-shadow: 0 6px 26px rgba(139, 92, 246, 0.45); }
+    .btn-primary:disabled { opacity: 0.55; cursor: wait; }
+
+    /* BOTÕES SECUNDÁRIOS 70% */
+    .btn-cyan-70 {
+      background: rgba(6, 182, 212, 0.70);
+      border: 2px solid var(--cyan);
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+    }
+    .btn-cyan-70:hover { background: rgba(6, 182, 212, 0.95); transform: translateY(-1px); }
+
+    .btn-purple-70 {
+      background: rgba(139, 92, 246, 0.70);
+      border: 2px solid var(--purple);
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+    }
+    .btn-purple-70:hover { background: rgba(139, 92, 246, 0.95); transform: translateY(-1px); }
+
+    .btn-pink-70 {
+      background: rgba(236, 72, 153, 0.70);
+      border: 2px solid var(--pink);
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+    }
+    .btn-pink-70:hover { background: rgba(236, 72, 153, 0.95); transform: translateY(-1px); }
+
+    /* CABEÇALHO & ABAS PRINCIPAIS */
+    #mainApp { display: none; }
+    header { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .header-title { font-size: 24px; font-weight: 900; background: linear-gradient(90deg, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header-sub { font-size: 14px; color: var(--muted); display: block; margin-top: 2px; }
+    .status-pill { background: rgba(16, 185, 129, 0.70); border: 2px solid var(--green); color: #ffffff; padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+
+    .main-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+    .main-tab-btn { background: var(--card); border: 2px solid #334155; color: #cbd5e1; padding: 16px 14px; border-radius: 14px; font-size: 16px; font-weight: 900; cursor: pointer; transition: 0.2s; text-align: center; }
+    .main-tab-btn.active { background: rgba(6, 182, 212, 0.70); border-color: var(--cyan); color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); box-shadow: 0 4px 18px rgba(6, 182, 212, 0.35); }
+    .main-tab-btn.tab-mult.active { background: rgba(139, 92, 246, 0.70); border-color: var(--purple); color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); box-shadow: 0 4px 18px rgba(139, 92, 246, 0.35); }
+    .main-panel { display: none; }
+    .main-panel.active { display: block; }
+
+    /* ATALHOS DO TOPO */
+    .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .btn-shortcut { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 15px 16px; border-radius: 12px; font-size: 14.5px; font-weight: 800; text-decoration: none; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); transition: 0.2s; text-align: center; }
+    .sc-cyan { background: rgba(6, 182, 212, 0.70); border: 2px solid var(--cyan); }
+    .sc-cyan:hover { background: rgba(6, 182, 212, 0.95); transform: translateY(-1px); }
+    .sc-purple { background: rgba(139, 92, 246, 0.70); border: 2px solid var(--purple); }
+    .sc-purple:hover { background: rgba(139, 92, 246, 0.95); transform: translateY(-1px); }
+    .sc-pink { background: rgba(236, 72, 153, 0.70); border: 2px solid var(--pink); }
+    .sc-pink:hover { background: rgba(236, 72, 153, 0.95); transform: translateY(-1px); }
+
+    /* GUIA RÁPIDO 3 PASSOS */
+    .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .guide-step { background: var(--card-inner); border: 1.5px solid #2a364f; border-radius: 12px; padding: 14px; }
+    .guide-step strong { display: block; color: #38bdf8; font-size: 13.5px; margin-bottom: 5px; }
+    .guide-step p { font-size: 12.5px; color: #cbd5e1; line-height: 1.45; }
+
+    /* CARTÕES */
+    .card { background: var(--card); border: 2px solid var(--border); border-radius: 18px; padding: 24px; margin-bottom: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 2px solid #1e293b; }
+    .card-header h2 { font-size: 20px; font-weight: 900; color: #ffffff; display: flex; align-items: center; gap: 10px; }
+
+    .step-badge { background: rgba(6, 182, 212, 0.70); border: 1.5px solid var(--cyan); color: #ffffff; font-size: 12px; font-weight: 900; padding: 4px 10px; border-radius: 8px; }
+    .step-badge.purple { background: rgba(139, 92, 246, 0.70); border-color: var(--purple); color: #ffffff; }
+    .step-badge.pink { background: rgba(236, 72, 153, 0.70); border-color: var(--pink); color: #ffffff; }
+
+    label { display: block; font-size: 14px; color: #e2e8f0; margin-bottom: 6px; font-weight: 700; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+
+    .triggers-box { background: var(--card-inner); border: 2px solid #2a364f; border-radius: 14px; padding: 16px; margin-bottom: 18px; }
+    .triggers-title { font-size: 15px; color: #38bdf8; font-weight: 800; margin-bottom: 12px; display: block; }
+    .triggers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .triggers-grid select { margin-bottom: 0; }
+
+    .script-item { background: var(--card-inner); border-left: 5px solid var(--cyan); padding: 12px 14px; border-radius: 10px; margin-bottom: 10px; font-size: 14.5px; line-height: 1.55; }
+    .script-item.body-item { border-left-color: var(--purple); }
+    .script-item.cta-item { border-left-color: var(--pink); }
+
+    .storyboard-box { background: rgba(245,158,11,0.12); border: 1.5px solid var(--amber); border-radius: 12px; padding: 16px; }
+    pre { white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 13px; color: #f1f5f9; background: #050811; padding: 14px; border-radius: 10px; border: 1px solid #334155; line-height: 1.55; margin-top: 8px; }
+    .json-card { background: var(--card-inner); border: 1.5px solid #2a364f; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    .json-header { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #c084fc; font-weight: 800; }
+
+    /* MULTIPLICADOR */
+    .file-box { background: var(--card-inner); border: 2px dashed #334155; border-radius: 12px; padding: 18px; text-align: center; cursor: pointer; margin-top: 8px; transition: 0.2s; }
+    .file-box.box-cyan { border-color: var(--cyan); }
+    .file-box.box-cyan:hover { background: rgba(6, 182, 212, 0.08); }
+    .file-box.box-purple { border-color: var(--purple); }
+    .file-box.box-purple:hover { background: rgba(139, 92, 246, 0.08); }
+    .file-box.box-pink { border-color: var(--pink); }
+    .file-box.box-pink:hover { background: rgba(236, 72, 153, 0.08); }
+    .count-tag { display: inline-block; background: #1e293b; color: #fff; padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 800; margin-top: 10px; }
+
+    .summary-bar { background: rgba(6, 182, 212, 0.14); border: 1.5px solid var(--cyan); border-radius: 12px; padding: 14px; text-align: center; font-size: 15px; margin-bottom: 16px; color: #e0f2fe; font-weight: 700; }
+    .progress-wrap { background: var(--card-inner); border-radius: 99px; height: 14px; overflow: hidden; margin: 14px 0; display: none; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cyan), var(--purple)); transition: width 0.3s; }
+    .result-item { background: var(--card-inner); border: 1.5px solid #2a364f; border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; }
+    .btn-dl { background: rgba(16, 185, 129, 0.75); border: 2px solid var(--green); color: #ffffff; text-decoration: none; font-weight: 900; padding: 10px 16px; border-radius: 9px; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
+    .btn-dl:hover { background: rgba(16, 185, 129, 0.98); }
+
+    .scale-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    .scale-table th { background: var(--card-inner); color: #38bdf8; text-align: left; padding: 12px; border-bottom: 2px solid #334155; }
+    .scale-table td { padding: 12px; border-bottom: 1px solid #1e293b; color: #f1f5f9; }
+    .badge-total { background: rgba(6, 182, 212, 0.70); border: 1.5px solid var(--cyan); color: #ffffff; padding: 4px 10px; border-radius: 99px; font-weight: 800; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- TELA DE LICENÇA -->
+    <div id="lockOverlay">
+      <div class="logo">🎬</div>
+      <h1>Central de Vídeos Virais PRO</h1>
+      <p class="sub">Digite sua Chave VIP para liberar a Fábrica e o Multiplicador</p>
+      <input type="text" id="keyInput" placeholder="COLE SUA CHAVE VIP AQUI" style="text-align:center;font-weight:900;text-transform:uppercase;font-size:16px;">
+      <button type="button" class="btn-primary" id="btnUnlock">🔓 Liberar Ferramenta Agora</button>
+      <p id="lockStatus" style="color:#fca5a5;font-size:13px;margin-top:14px;min-height:20px;font-weight:700;"></p>
+    </div>
+
+    <!-- APP PRINCIPAL -->
+    <div id="mainApp">
+      <header>
+        <div>
+          <span class="header-title">🎬 Central de Vídeos Virais PRO</span>
+          <span class="header-sub">IA Generativa Universal (Qualquer Produto • 6s + 10s + 6s) • Multiplicador até 125 Vídeos</span>
+        </div>
+        <span id="clientBadge" class="status-pill">🟢 Licença Ativa</span>
+      </header>
+
+      <!-- ABAS GRANDES -->
+      <div class="main-tabs">
+        <button type="button" class="main-tab-btn active" onclick="switchMainTab(1)">
+          ✍️ 1. Fábrica de Roteiros &amp; Flow
+        </button>
+        <button type="button" class="main-tab-btn tab-mult" onclick="switchMainTab(2)">
+          ⚡ 2. Multiplicador (Até 125 Vídeos)
+        </button>
+      </div>
+
+      <!-- ABA 1: FÁBRICA -->
+      <div id="panel1" class="main-panel active">
+        <div class="quick-links">
+          <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener" class="btn-shortcut sc-cyan">🎬 Abrir Google Flow</a>
+          <a href="https://ggmax.com.br/anuncio/grok-flow-chat-gpt-meshy-dreamface-elevenlabs-lovable-muse-digen-voicemod-heygen" target="_blank" rel="noopener" class="btn-shortcut sc-purple">🔥 Recarga 1.000 Flow (A partir de R$ 10)</a>
+          <a href="https://fish.audio/" target="_blank" rel="noopener" class="btn-shortcut sc-pink">🎙️ Abrir Fish Audio</a>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2><span class="step-badge">PASSO 1</span> Configurar Qualquer Produto &amp; Gatilhos</h2>
+          </div>
+
+          <div class="guide-grid">
+            <div class="guide-step">
+              <strong>1️⃣ Digite Qualquer Produto</strong>
+              <p>Vale para tudo: sapato scarpin, kit de agulhas, xuxinha de cabelo, lente de contato, eletrônicos ou casa. A IA entende qualquer item.</p>
+            </div>
+            <div class="guide-step">
+              <strong>2️⃣ Gere os Clipes no Google Flow</strong>
+              <p>Anexe a foto do produto dentro do Google Flow, cole cada JSON pronto (6s + 10s + 6s) e baixe os clipes já falados em Português.</p>
+            </div>
+            <div class="guide-step">
+              <strong>3️⃣ Multiplique até 125 Vídeos</strong>
+              <p>Junte os clipes na Aba 2 para gerar até 125 variações únicas em MP4 real compatível com WhatsApp e TikTok Shop.</p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <label>Nome Completo do Produto (qualquer nicho):</label>
+              <input type="text" id="prodName" placeholder="Ex: Kit de agulhas, Saco de xuxinha, Sapato scarpin...">
+            </div>
+            <div>
+              <label>Desejo / Benefício Principal (opcional — a IA completa sozinha):</label>
+              <input type="text" id="prodBenefit" placeholder="Deixe vazio para a IA criar automaticamente ou escreva aqui">
+            </div>
+          </div>
+
+          <label>Quantidade por Etapa (Ganchos 6s, Andamentos 10s e CTAs Invisíveis 6s):</label>
+          <select id="hookQty">
+            <option value="1">1 de cada (1 Gancho + 1 Andamento + 1 CTA = 1 Vídeo)</option>
+            <option value="2">2 de cada (2 Ganchos + 2 Andamentos + 2 CTAs = 8 Vídeos)</option>
+            <option value="3" selected>3 de cada (3 Ganchos + 3 Andamentos + 3 CTAs = 27 Vídeos)</option>
+            <option value="4">4 de cada (4 Ganchos + 4 Andamentos + 4 CTAs = 64 Vídeos)</option>
+            <option value="5">5 de cada (5 Ganchos + 5 Andamentos + 5 CTAs = 125 Vídeos)</option>
+          </select>
+
+          <div class="triggers-box">
+            <span class="triggers-title" id="triggersBoxTitle">🎯 Escolha o Gatilho Mental de cada Gancho (6s):</span>
+            <div class="triggers-grid" id="dynamicTriggersContainer"></div>
+          </div>
+
+          <button type="button" class="btn-primary" id="btnGenFactory">✨ Gerar Roteiros Sob Medida + Storyboard + Prompts Flow</button>
+          <p id="factoryAiStatus" style="text-align:center;font-size:13px;color:#38bdf8;margin-top:10px;font-weight:700;"></p>
+        </div>
+
+        <div id="factoryResult" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <h2><span class="step-badge">STORYBOARD</span> Roteiro Visual Sob Medida (22s Total)</h2>
+              <button type="button" class="btn-cyan-70" onclick="copyText('storyboardPrompt')">📋 Copiar Storyboard</button>
+            </div>
+            <div class="storyboard-box"><pre id="storyboardPrompt"></pre></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 id="ganchosHeaderTitle"><span class="step-badge">GANCHOS • 6s</span> Parte 1: Ganchos Curtos (0s a 6s)</h2>
+              <button type="button" class="btn-cyan-70" onclick="copyText('ganchosText')">📋 Copiar Ganchos</button>
+            </div>
+            <div id="ganchosList"></div>
+            <pre id="ganchosText" style="display:none;"></pre>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 id="corposHeaderTitle"><span class="step-badge purple">DESEJO • 10s</span> Parte 2: Andamentos Objetivos (6s a 16s)</h2>
+              <button type="button" class="btn-purple-70" onclick="copyText('corposText')">📋 Copiar Andamentos</button>
+            </div>
+            <div id="corposList"></div>
+            <pre id="corposText" style="display:none;"></pre>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 id="ctasHeaderTitle"><span class="step-badge pink">CTA INVISÍVEL • 6s</span> Parte 3: Fechamento Natural (16s a 22s)</h2>
+              <button type="button" class="btn-pink-70" onclick="copyText('ctasText')">📋 Copiar CTAs Invisíveis</button>
+            </div>
+            <div id="ctasList"></div>
+            <pre id="ctasText" style="display:none;"></pre>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 id="flowJsonTitle"><span class="step-badge purple">GOOGLE FLOW</span> Prompts JSON Sob Medida (6s / 10s / 6s • PT-BR)</h2>
+              <button type="button" class="btn-purple-70" onclick="copyAllFlowJson()">📋 Copiar Todos os JSONs</button>
+            </div>
+            <div id="flowJsonContainer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA 2: MULTIPLICADOR -->
+      <div id="panel2" class="main-panel">
+        <div class="card">
+          <div class="card-header">
+            <h2><span class="step-badge">ETAPA 1</span> Selecione até 5 Ganchos (6s)</h2>
+          </div>
+          <div class="file-box box-cyan" onclick="document.getElementById('inGanchos').click()">
+            <strong style="color:#38bdf8;font-size:15px;">📂 Toque para escolher os vídeos de Gancho</strong>
+            <div><span class="count-tag" id="tagGanchos">0 de 5 vídeos selecionados</span></div>
+            <input type="file" id="inGanchos" accept="video/*" multiple style="display:none;">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2><span class="step-badge purple">ETAPA 2</span> Selecione até 5 Andamentos (10s)</h2>
+          </div>
+          <div class="file-box box-purple" onclick="document.getElementById('inCorpos').click()">
+            <strong style="color:#c084fc;font-size:15px;">📂 Toque para escolher os vídeos de Experiência / Desejo</strong>
+            <div><span class="count-tag" id="tagCorpos">0 de 5 vídeos selecionados</span></div>
+            <input type="file" id="inCorpos" accept="video/*" multiple style="display:none;">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2><span class="step-badge pink">ETAPA 3</span> Selecione até 5 CTAs Invisíveis (6s)</h2>
+          </div>
+          <div class="file-box box-pink" onclick="document.getElementById('inCtas').click()">
+            <strong style="color:#f472b6;font-size:15px;">📂 Toque para escolher os vídeos de Fechamento Natural</strong>
+            <div><span class="count-tag" id="tagCtas">0 de 5 vídeos selecionados</span></div>
+            <input type="file" id="inCtas" accept="video/*" multiple style="display:none;">
+          </div>
+        </div>
+
+        <div class="summary-bar" id="comboSummary">
+          Selecione pelo menos <strong>1 vídeo em cada etapa</strong> para calcular as combinações.
+        </div>
+
+        <button type="button" class="btn-primary" id="btnMultiply">⚡ Multiplicar e Gerar Vídeos Únicos Agora</button>
+
+        <div class="progress-wrap" id="progWrap"><div class="progress-bar" id="progBar"></div></div>
+        <p id="statusMsg" style="text-align:center;font-size:14px;color:#38bdf8;margin:12px 0;font-weight:800;"></p>
+        <div id="resultsContainer"></div>
+
+        <!-- TABELA DE ESCALA -->
+        <div class="card" style="margin-top:24px;">
+          <div class="card-header">
+            <h2><span class="step-badge">TABELA</span> Escala de Multiplicação (1×1×1 até 5×5×5)</h2>
+          </div>
+          <table class="scale-table">
+            <thead>
+              <tr><th>Por Etapa</th><th>Cálculo</th><th>Vídeos Únicos Gerados</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>1 vídeo</strong> de cada</td><td>1 × 1 × 1</td><td><span class="badge-total">1 vídeo único</span></td></tr>
+              <tr><td><strong>2 vídeos</strong> de cada</td><td>2 × 2 × 2</td><td><span class="badge-total">8 vídeos únicos</span></td></tr>
+              <tr><td><strong>3 vídeos</strong> de cada</td><td>3 × 3 × 3</td><td><span class="badge-total">27 vídeos únicos</span></td></tr>
+              <tr><td><strong>4 vídeos</strong> de cada</td><td>4 × 4 × 4</td><td><span class="badge-total">64 vídeos únicos</span></td></tr>
+              <tr><td><strong>5 vídeos</strong> de cada</td><td>5 × 5 × 5</td><td><span class="badge-total">🔥 125 vídeos únicos</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <canvas id="renderCanvas" width="720" height="1280" style="display:none;"></canvas>
+
+  <script>
+    const LICENSE_API_URL = "https://script.google.com/macros/s/AKfycbyARIqcmk7Cb-Dpc_92uxq9aYBV80ff4M7KeTzdZvddPyj8VM7zjvY_uyjDm-BZ5B0M/exec";
+    const TRIGGER_OPTIONS = [
+      { key: "persuasivo", label: "1. 🧠 Persuasivo" },
+      { key: "curiosidade", label: "2. 👀 Curiosidade" },
+      { key: "escassez", label: "3. ⏳ Escassez" },
+      { key: "urgencia", label: "4. 🚨 Urgência" },
+      { key: "emocional", label: "5. ❤️ Emocional" },
+      { key: "surpresa", label: "6. 😱 Surpresa" },
+      { key: "economia", label: "7. 💰 Economia" },
+      { key: "autoridade", label: "8. 🏆 Autoridade" },
+      { key: "objecao", label: "9. 🤔 Quebra de objeção" },
+      { key: "problema_solucao", label: "10. 🎯 Problema e solução" }
+    ];
+
+    function renderTriggerSelectors() {
+      const qty = parseInt(document.getElementById('hookQty').value);
+      document.getElementById('triggersBoxTitle').textContent = qty === 1
+        ? `🎯 Escolha o Gatilho Mental do seu Gancho (6s):`
+        : `🎯 Escolha o Gatilho Mental de cada um dos ${qty} Ganchos (6s):`;
+      const container = document.getElementById('dynamicTriggersContainer');
+      container.innerHTML = '';
+      for (let i = 0; i < qty; i++) {
+        const div = document.createElement('div');
+        const optionsHtml = TRIGGER_OPTIONS.map((opt, idx) => `<option value="${opt.key}" ${idx === (i % TRIGGER_OPTIONS.length) ? 'selected' : ''}>${opt.label}</option>`).join('');
+        div.innerHTML = `<label>Gancho ${i + 1}:</label><select class="hook-trigger-select">${optionsHtml}</select>`;
+        container.appendChild(div);
+      }
+    }
+    document.getElementById('hookQty').addEventListener('change', renderTriggerSelectors);
+    renderTriggerSelectors();
+
+    function switchMainTab(num) {
+      document.querySelectorAll('.main-tab-btn').forEach((b, idx) => b.classList.toggle('active', idx === num - 1));
+      document.querySelectorAll('.main-panel').forEach((p, idx) => p.classList.toggle('active', idx === num - 1));
+    }
+
+    function getDeviceId() {
+      let id = localStorage.getItem('ss_mult_web_id');
+      if (!id) { id = 'WEB-MULT-' + Math.random().toString(36).substring(2, 8).toUpperCase(); localStorage.setItem('ss_mult_web_id', id); }
+      return id;
+    }
+
+    async function checkKey(key) {
+      const status = document.getElementById('lockStatus');
+      const btn = document.getElementById('btnUnlock');
+      btn.disabled = true; btn.textContent = '⏳ VERIFICANDO LICENÇA...';
+      try {
+        const url = `${LICENSE_API_URL}?key=${encodeURIComponent(key)}&deviceId=${encodeURIComponent(getDeviceId())}`;
+        const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+        const data = await res.json();
+        if (data.valid) {
+          localStorage.setItem('ss_saved_key', key);
+          document.getElementById('lockOverlay').style.display = 'none';
+          document.getElementById('mainApp').style.display = 'block';
+          document.getElementById('clientBadge').textContent = `🟢 ${data.cliente} (Até ${data.validade})`;
+        } else { status.textContent = '🚫 ' + (data.message || 'Chave inválida.'); }
+      } catch (e) { status.textContent = '⚠️ Erro de conexão: ' + e.message; }
+      finally { btn.disabled = false; btn.textContent = '🔓 Liberar Ferramenta Agora'; }
+    }
+
+    document.getElementById('btnUnlock').addEventListener('click', () => {
+      const k = document.getElementById('keyInput').value.trim().toUpperCase();
+      if (k) checkKey(k);
+    });
+    const saved = localStorage.getItem('ss_saved_key');
+    if (saved) { document.getElementById('keyInput').value = saved; checkKey(saved); }
+
+    // FALLBACK UNIVERSAL NEUTRO (NUNCA ERRA NICHO: NUNCA FALA "TECIDO" PARA SAPATO NEM "SALA" PARA AGULHA/LENTE)
+    function buildUniversalFallback(prod, desire, qty, chosenTriggers) {
+      const cleanDesire = desire || `praticidade, acabamento impecável e resultado real no dia a dia`;
+      const hookBank = {
+        persuasivo: `"Olha de perto a qualidade e o acabamento desse ${prod}!"`,
+        curiosidade: `"Para tudo e olha esse ${prod} que acabou de chegar aqui..."`,
+        escassez: `"Esse ${prod} esgota rápido toda vez que entra reposição!"`,
+        urgencia: `"Olha a condição especial que liberou hoje para esse ${prod}!"`,
+        emocional: `"Ter ${cleanDesire} facilita demais a rotina — olha esse ${prod}."`,
+        surpresa: `"Não esperava tanta qualidade nesse ${prod} pelo valor de hoje!"`,
+        economia: `"Excelente custo-benefício para ter ${cleanDesire} — olha esse ${prod}!"`,
+        autoridade: `"Quem repara nos detalhes vê na hora o padrão desse ${prod}."`,
+        objecao: `"Nada de item frágil ou sem graça: olha esse ${prod} bem de perto."`,
+        problema_solucao: `"Quer ${cleanDesire} sem complicação? Olha esse ${prod}."`
+      };
+
+      const ganchos = chosenTriggers.map(t => hookBank[t.key] || hookBank.persuasivo);
+      const baseAndamentos = [
+        `"Imagina você usando esse ${prod} no dia a dia e tendo ${cleanDesire}. Olha bem o acabamento e a praticidade em cada detalhe."`,
+        `"Sente só a qualidade real desse ${prod}. Ele foi feito para entregar ${cleanDesire} de um jeito simples e eficiente."`,
+        `"Quando a gente escolhe um ${prod} desse nível, percebe na hora a diferença. Garante ${cleanDesire} e rende muito."`,
+        `"Olha de pertinho os detalhes desse ${prod}: resistente, prático e pensado para trazer ${cleanDesire}."`,
+        `"É o tipo de ${prod} que resolve na hora e faz você querer ter sempre por perto."`
+      ];
+
+      return {
+        desejo_sugerido: cleanDesire,
+        cenario_flow: `Ambiente real limpo e bem iluminado adequado ao uso natural de ${prod}, destacando seus detalhes e proporção verdadeira`,
+        ganchos,
+        andamentos: Array.from({ length: qty }, (_, i) => baseAndamentos[i % baseAndamentos.length])
+      };
+    }
+
+    let allFlowJsons = [];
+
+    document.getElementById('btnGenFactory').addEventListener('click', async () => {
+      const prodInput = document.getElementById('prodName');
+      const benefitInput = document.getElementById('prodBenefit');
+      const statusAi = document.getElementById('factoryAiStatus');
+      const btn = document.getElementById('btnGenFactory');
+
+      const prod = prodInput.value.trim();
+      if (!prod) {
+        alert('Digite o nome do produto primeiro!');
+        prodInput.focus();
+        return;
+      }
+
+      const qty = parseInt(document.getElementById('hookQty').value);
+      const triggerSelects = document.querySelectorAll('.hook-trigger-select');
+      const chosenTriggers = Array.from(triggerSelects).map(sel => ({ key: sel.value, label: sel.options[sel.selectedIndex].text }));
+      const triggerNames = chosenTriggers.map((t, i) => `Gancho ${i + 1}: ${t.label}`).join(', ');
+
+      btn.disabled = true;
+      statusAi.textContent = `🧠 Analisando "${prod}" e criando roteiros sob medida...`;
+
+      let scriptData = null;
+
+      // 1. TENTA CONSULTAR A IA INFINITA NO SEU GOOGLE APPS SCRIPT
+      try {
+        const aiUrl = `${LICENSE_API_URL}?action=ai_script&prod=${encodeURIComponent(prod)}&desire=${encodeURIComponent(benefitInput.value.trim())}&qty=${qty}&triggers=${encodeURIComponent(triggerNames)}`;
+        const res = await fetch(aiUrl, { method: 'GET', redirect: 'follow' });
+        const json = await res.json();
+        if (json && Array.isArray(json.ganchos) && Array.isArray(json.andamentos) && json.ganchos.length > 0) {
+          scriptData = json;
+          if (!benefitInput.value.trim() && json.desejo_sugerido) {
+            benefitInput.value = json.desejo_sugerido;
+          }
+          statusAi.textContent = `✨ Roteiro personalizado gerado por IA sob medida para "${prod}"!`;
+        }
+      } catch (e) {
+        // Se a função ai_script ainda não foi adicionada no Apps Script, usa o Fallback Universal Neutro sem erro
+      }
+
+      // 2. SE NÃO HOUVER RESPOSTA DA IA EXTERNA, USA O FALLBACK UNIVERSAL NEUTRO
+      if (!scriptData) {
+        scriptData = buildUniversalFallback(prod, benefitInput.value.trim(), qty, chosenTriggers);
+        if (!benefitInput.value.trim()) {
+          benefitInput.value = scriptData.desejo_sugerido;
+        }
+        statusAi.textContent = `✅ Roteiro objetivo gerado para "${prod}" (6s + 10s + 6s)!`;
+      }
+
+      const desire = benefitInput.value.trim() || scriptData.desejo_sugerido;
+      const sceneFlow = scriptData.cenario_flow || `Ambiente real limpo e bem iluminado adequado ao uso natural de ${prod}`;
+
+      const LOCKED_SCENE_RULE = `CONTINUIDADE OBRIGATÓRIA DE CENA: Usar exatamente o(s) mesmo(s) ${prod} mostrado(s) na imagem anexada no Google Flow, preservando idênticas cores, formas, detalhes e proporção real. O cenário deve ser exatamente o mesmo em todos os clipes: ${sceneFlow}, como tomadas contínuas gravadas no mesmo minuto.`;
+
+      document.getElementById('storyboardPrompt').textContent =
+`Crie um storyboard sensorial contínuo de 22 segundos (formato vertical 9:16) baseado fielmente na foto do produto (${prod}) anexada no Google Flow, gravado no MESMO cenário (${sceneFlow}):
+- Cena 1 — Gancho Curto (0s a 6s): Apresentação clara e atrativa do ${prod} idêntico ao da foto anexada em proporção real.
+- Cena 2 — Experiência & Desejo (6s a 16s): Close-up detalhado mostrando os acabamentos e o uso prático de ${prod} (${desire}).
+- Cena 3 — CTA Invisível (16s a 22s): No mesmo enquadramento contínuo, gesto discreto apontando para o canto inferior esquerdo sem textos ou logotipos.`;
+
+      const hookRawPhrases = Array.from({ length: qty }, (_, idx) => {
+        const raw = scriptData.ganchos[idx] || scriptData.ganchos[0] || `"Olha de perto esse ${prod}!"`;
+        return `"${String(raw).replace(/^"|"$/g, '')}"`;
+      });
+
+      const corpoRawPhrases = Array.from({ length: qty }, (_, idx) => {
+        const raw = scriptData.andamentos[idx] || scriptData.andamentos[0] || `"Imagina você usando esse ${prod} e tendo ${desire}."`;
+        return `"${String(raw).replace(/^"|"$/g, '')}"`;
+      });
+
+      const ctaRawPhrases = [
+        `"Deixei o acesso direto aqui no cantinho antes que o cupom de hoje vire."`,
+        `"Se você também gostou, já garante o seu aqui embaixo antes que acabe."`,
+        `"Olha se ainda está disponível aqui no canto para você aproveitar hoje."`,
+        `"Salva o seu aqui embaixo enquanto ainda está com essa condição especial."`,
+        `"Vale muito a pena conferir aqui no cantinho antes que esse lote vire."`
+      ].slice(0, qty);
+
+      const selectedHooks = chosenTriggers.map((trig, idx) => `<strong>Gancho ${idx + 1} (${trig.label} • 6s):</strong> ${hookRawPhrases[idx]}`);
+      const allCorpos = corpoRawPhrases.map((phrase, idx) => `<strong>Andamento ${idx + 1} (Experiência &amp; Desejo • 10s):</strong> ${phrase}`);
+      const allCtas = ctaRawPhrases.map((phrase, idx) => `<strong>CTA Invisível ${idx + 1} (6s):</strong> ${phrase}`);
+
+      document.getElementById('ganchosList').innerHTML = selectedHooks.map(g => `<div class="script-item">${g}</div>`).join('');
+      document.getElementById('corposList').innerHTML = allCorpos.map(c => `<div class="script-item body-item">${c}</div>`).join('');
+      document.getElementById('ctasList').innerHTML = allCtas.map(a => `<div class="script-item cta-item">${a}</div>`).join('');
+      document.getElementById('ganchosText').textContent = selectedHooks.map(x => x.replace(/<[^>]+>/g, '')).join('\n\n');
+      document.getElementById('corposText').textContent = allCorpos.map(x => x.replace(/<[^>]+>/g, '')).join('\n\n');
+      document.getElementById('ctasText').textContent = allCtas.map(x => x.replace(/<[^>]+>/g, '')).join('\n\n');
+
+      const flowBlueprints = [];
+      for (let i = 0; i < qty; i++) {
+        flowBlueprints.push({
+          label: `GANCHO ${i + 1} (${chosenTriggers[i].label})`,
+          duracao: 6,
+          acao: `Apresentação em plano vertical (6 segundos contínuos): no mesmo cenário (${sceneFlow}), mostra o ${prod} idêntico ao da imagem anexada no Google Flow em proporção real`,
+          fala: hookRawPhrases[i].replace(/^"|"$/g, '')
+        });
+      }
+      for (let i = 0; i < qty; i++) {
+        flowBlueprints.push({
+          label: `ANDAMENTO ${i + 1} (DESEJO & SENSAÇÃO)`,
+          duracao: 10,
+          acao: `Close-up detalhado (10 segundos contínuos): no mesmo cenário (${sceneFlow}), mostra os acabamentos reais e a experiência de usar ${prod} (${desire}), mantendo fielmente o produto da foto`,
+          fala: corpoRawPhrases[i].replace(/^"|"$/g, '')
+        });
+      }
+      for (let i = 0; i < qty; i++) {
+        flowBlueprints.push({
+          label: `CTA INVISÍVEL ${i + 1}`,
+          duracao: 6,
+          acao: `Fechamento natural (6 segundos contínuos): mantendo o ${prod} no mesmo cenário, gesto discreto apontando para o canto inferior esquerdo da tela`,
+          fala: ctaRawPhrases[i].replace(/^"|"$/g, '')
+        });
+      }
+
+      allFlowJsons = [];
+      const flowContainer = document.getElementById('flowJsonContainer');
+      flowContainer.innerHTML = '';
+      flowBlueprints.forEach((bp, idx) => {
+        const str = JSON.stringify({
+          etapa_do_video: bp.label,
+          formato: "9:16 vertical",
+          duracao_segundos: bp.duracao,
+          produto_base: prod,
+          sensacao_e_desejo: desire,
+          fidelidade_a_imagem_enviada: "OBRIGATÓRIO gerar a cena a partir da imagem anexada aqui no Flow, mantendo exatamente o mesmo design, cores, iluminação e proporção real do produto da foto, sem inventar variações ou alterar o cenário.",
+          cenario_padrao_travado: LOCKED_SCENE_RULE,
+          acao_deste_clipe: bp.acao,
+          idioma_obrigatorio: "Português do Brasil (pt-BR)",
+          narracao_obrigatoria_pt_br: bp.fala,
+          instrucao_de_voz: `Voz brasileira natural, objetiva e clara falando exclusivamente em Português do Brasil durante os ${bp.duracao} segundos o seguinte texto curto: "${bp.fala}". Nunca falar em inglês. Sem música de fundo.`,
+          proibicoes_visuais: "PROIBIDO mudar o cenário ou o fundo entre os clipes, PROIBIDO trocar as cores do produto da foto, PROIBIDO colocar logotipo do TikTok, marcas d'água ou textos escritos na tela."
+        }, null, 2);
+        allFlowJsons.push(str);
+        const card = document.createElement('div');
+        card.className = 'json-card';
+        card.innerHTML = `<div class="json-header"><span>🎬 ${bp.label} • ${bp.duracao}s</span><button type="button" class="btn-cyan-70" onclick="copyOneJson(${idx})">📋 Copiar JSON (${bp.duracao}s)</button></div><pre>${str}</pre>`;
+        flowContainer.appendChild(card);
+      });
+      document.getElementById('factoryResult').style.display = 'block';
+      btn.disabled = false;
+    });
+
+    function copyOneJson(idx) { navigator.clipboard.writeText(allFlowJsons[idx]); alert('JSON copiado!'); }
+    function copyAllFlowJson() { navigator.clipboard.writeText(allFlowJsons.join('\n\n---\n\n')); alert('Todos os JSONs copiados!'); }
+    function copyText(id) { navigator.clipboard.writeText(document.getElementById(id).textContent); alert('Copiado com sucesso!'); }
+
+    // MULTIPLICADOR COM MP4 REAL (H.264 + AAC) 100% COMPATÍVEL COM WHATSAPP E CELULAR
+    let filesG = [], filesC = [], filesA = [];
+    function updateSummary() {
+      const total = filesG.length * filesC.length * filesA.length;
+      document.getElementById('comboSummary').innerHTML = total > 0
+        ? `🔥 Pronto para gerar <strong>${total} vídeos MP4 reais</strong> (${filesG.length} × ${filesC.length} × ${filesA.length}) compatíveis com WhatsApp e Celular!`
+        : `Selecione pelo menos <strong>1 vídeo em cada etapa</strong> para calcular as combinações.`;
+    }
+    function limitToFive(fileList) { const arr = Array.from(fileList); return arr.length > 5 ? arr.slice(0, 5) : arr; }
+
+    document.getElementById('inGanchos').addEventListener('change', e => { filesG = limitToFive(e.target.files); document.getElementById('tagGanchos').textContent = `${filesG.length} de 5 vídeos selecionados`; updateSummary(); });
+    document.getElementById('inCorpos').addEventListener('change', e => { filesC = limitToFive(e.target.files); document.getElementById('tagCorpos').textContent = `${filesC.length} de 5 vídeos selecionados`; updateSummary(); });
+    document.getElementById('inCtas').addEventListener('change', e => { filesA = limitToFive(e.target.files); document.getElementById('tagCtas').textContent = `${filesA.length} de 5 vídeos selecionados`; updateSummary(); });
+
+    async function decodeClipAudio(file, targetSampleRate = 44100) {
+      const arrayBuf = await file.arrayBuffer();
+      const tempCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: targetSampleRate });
+      try {
+        const audioBuf = await tempCtx.decodeAudioData(arrayBuf);
+        await tempCtx.close();
+        return audioBuf;
+      } catch (e) {
+        await tempCtx.close();
+        return null;
+      }
+    }
+
+    async function renderCombinationMP4(clipFiles, index) {
+      const canvas = document.getElementById('renderCanvas');
+      const ctx = canvas.getContext('2d');
+      const width = 720;
+      const height = 1280;
+      const fps = 30;
+      const sampleRate = 44100;
+
+      const decodedAudios = [];
+      for (const f of clipFiles) {
+        decodedAudios.push(await decodeClipAudio(f, sampleRate));
+      }
+
+      const muxer = new Mp4Muxer.Muxer({
+        target: new Mp4Muxer.ArrayBufferTarget(),
+        video: { codec: 'avc', width, height },
+        audio: { codec: 'aac', numberOfChannels: 2, sampleRate },
+        fastStart: 'in-memory'
+      });
+
+      const videoEncoder = new VideoEncoder({
+        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+        error: e => console.error('VideoEncoder error:', e)
+      });
+
+      videoEncoder.configure({
+        codec: 'avc1.42001f',
+        width,
+        height,
+        bitrate: 2_500_000,
+        framerate: fps
+      });
+
+      const audioEncoder = new AudioEncoder({
+        output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
+        error: e => console.error('AudioEncoder error:', e)
+      });
+
+      audioEncoder.configure({
+        codec: 'mp4a.40.2',
+        numberOfChannels: 2,
+        sampleRate,
+        bitrate: 128_000
+      });
+
+      let currentTimestampUs = 0;
+
+      for (let cIdx = 0; cIdx < clipFiles.length; cIdx++) {
+        const file = clipFiles[cIdx];
+        const audioBuf = decodedAudios[cIdx];
+
+        const vid = document.createElement('video');
+        vid.src = URL.createObjectURL(file);
+        vid.muted = true;
+        vid.playsInline = true;
+        await new Promise(res => { vid.onloadedmetadata = res; });
+
+        const durationSec = vid.duration || 5;
+        const totalFrames = Math.max(1, Math.floor(durationSec * fps));
+
+        const totalSamples = Math.floor(durationSec * sampleRate);
+        const leftCh = new Float32Array(totalSamples);
+        const rightCh = new Float32Array(totalSamples);
+
+        if (audioBuf) {
+          const srcL = audioBuf.getChannelData(0);
+          const srcR = audioBuf.numberOfChannels > 1 ? audioBuf.getChannelData(1) : srcL;
+          const copyLen = Math.min(totalSamples, srcL.length);
+          leftCh.set(srcL.subarray(0, copyLen));
+          rightCh.set(srcR.subarray(0, copyLen));
+        }
+
+        const chunkSamples = 1024;
+        for (let offset = 0; offset < totalSamples; offset += chunkSamples) {
+          const len = Math.min(chunkSamples, totalSamples - offset);
+          const planar = new Float32Array(len * 2);
+          planar.set(leftCh.subarray(offset, offset + len), 0);
+          planar.set(rightCh.subarray(offset, offset + len), len);
+
+          const audioData = new AudioData({
+            format: 'f32-planar',
+            sampleRate,
+            numberOfFrames: len,
+            numberOfChannels: 2,
+            timestamp: currentTimestampUs + Math.round((offset / sampleRate) * 1_000_000),
+            data: planar
+          });
+          audioEncoder.encode(audioData);
+          audioData.close();
+        }
+
+        for (let f = 0; f < totalFrames; f++) {
+          const targetTime = Math.min(durationSec - 0.01, f / fps);
+          vid.currentTime = targetTime;
+          await new Promise(res => { vid.onseeked = res; });
+
+          const zoom = 1 + ((index % 3) * 0.01);
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(
+            vid,
+            (width - width * zoom) / 2,
+            (height - height * zoom) / 2,
+            width * zoom,
+            height * zoom
+          );
+
+          const frameTs = currentTimestampUs + Math.round((f / fps) * 1_000_000);
+          const frame = new VideoFrame(canvas, { timestamp: frameTs });
+          videoEncoder.encode(frame, { keyFrame: f % 30 === 0 });
+          frame.close();
+        }
+
+        currentTimestampUs += Math.round(durationSec * 1_000_000);
+        URL.revokeObjectURL(vid.src);
+      }
+
+      await videoEncoder.flush();
+      await audioEncoder.flush();
+      muxer.finalize();
+
+      const { buffer } = muxer.target;
+      const blob = new Blob([buffer], { type: 'video/mp4' });
+      return { url: URL.createObjectURL(blob), ext: 'mp4' };
+    }
+
+    document.getElementById('btnMultiply').addEventListener('click', async () => {
+      if (!filesG.length || !filesC.length || !filesA.length) { alert('Selecione pelo menos 1 vídeo em cada etapa.'); return; }
+      if (typeof VideoEncoder === 'undefined' || typeof Mp4Muxer === 'undefined') {
+        alert('Atualize seu navegador Chrome ou Edge para exportar em MP4 compatível com WhatsApp.');
+        return;
+      }
+
+      const combos = [];
+      for (const g of filesG) for (const c of filesC) for (const a of filesA) combos.push([g, c, a]);
+      const btn = document.getElementById('btnMultiply'); const progWrap = document.getElementById('progWrap'); const progBar = document.getElementById('progBar'); const statusMsg = document.getElementById('statusMsg'); const results = document.getElementById('resultsContainer');
+      btn.disabled = true; progWrap.style.display = 'block'; results.innerHTML = '';
+      for (let i = 0; i < combos.length; i++) {
+        statusMsg.textContent = `⏳ Gerando MP4 real (WhatsApp/Celular) ${i + 1} de ${combos.length}...`;
+        progBar.style.width = `${Math.round(((i) / combos.length) * 100)}%`;
+        const out = await renderCombinationMP4(combos[i], i + 1);
+        const fileName = `Video_Unico_${String(i + 1).padStart(3, '0')}_PRO.mp4`;
+        const item = document.createElement('div'); item.className = 'result-item';
+        item.innerHTML = `<strong>🎬 ${fileName}</strong><a href="${out.url}" download="${fileName}" class="btn-dl">⬇️ Baixar no Celular ou no PC</a>`;
+        results.appendChild(item);
+      }
+      progBar.style.width = '100%'; statusMsg.textContent = `✅ Concluído! ${combos.length} vídeos MP4 reais prontos para WhatsApp e TikTok!`; btn.disabled = false;
+    });
+  </script>
+</body>
+</html>
